@@ -1,18 +1,20 @@
 """Prediction endpoints"""
 
-from typing import Dict
+from typing import Dict, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from ...models.schemas import (
     TransactionInput,
     PredictionResponse,
     BatchPredictionInput,
     BatchPredictionResponse,
+    UserResponse,
 )
 from ...models.ml_model import fraud_model
 from ...services.fraud_detector import FraudDetectorService
 from ...services.data_processor import DataProcessor
+from ...services.auth_service import get_current_user, get_current_user_optional
 
 router = APIRouter()
 
@@ -21,9 +23,12 @@ router = APIRouter()
     "",
     response_model=PredictionResponse,
     summary="Predict fraud for a single transaction",
-    description="Analyze a transaction and predict if it's fraudulent",
+    description="Analyze a transaction and predict if it's fraudulent. Requires authentication.",
 )
-async def predict_fraud(transaction: TransactionInput) -> PredictionResponse:
+async def predict_fraud(
+    transaction: TransactionInput,
+    current_user: UserResponse = Depends(get_current_user)
+) -> PredictionResponse:
     """
     Predict if a single transaction is fraudulent.
 
@@ -49,10 +54,11 @@ async def predict_fraud(transaction: TransactionInput) -> PredictionResponse:
     "/batch",
     response_model=BatchPredictionResponse,
     summary="Predict fraud for multiple transactions",
-    description="Analyze multiple transactions in a single request",
+    description="Analyze multiple transactions in a single request. Requires authentication.",
 )
 async def predict_fraud_batch(
     batch: BatchPredictionInput,
+    current_user: UserResponse = Depends(get_current_user)
 ) -> BatchPredictionResponse:
     """
     Predict fraud for multiple transactions at once.
