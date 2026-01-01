@@ -23,17 +23,23 @@ A **machine learning-powered fraud detection system** for credit card transactio
 ### Dashboard
 ![Dashboard](docs/screenshots/dashboard.png)
 
-### Fraud Detection
-![Fraud Detected](docs/screenshots/fraud-detected.png)
-
-### Legitimate Transaction
-![Legitimate](docs/screenshots/legitimate.png)
-
 ### Transaction Analyzer
 ![Analyzer](docs/screenshots/analyzer.png)
 
+### Prediction History
+![History](docs/screenshots/history.png)
+
+### Fraud Detection
+![Fraud Detected](docs/screenshots/fraud-detected.png)
+
 ### Model Information
 ![Model Info](docs/screenshots/model-info.png)
+
+### Feature Importance
+![Feature Importance](docs/screenshots/feature-importance.png)
+
+### Dataset Information
+![Dataset Info](docs/screenshots/dataset-info.png)
 
 ---
 
