@@ -4,14 +4,17 @@ import TransactionForm from './components/TransactionForm';
 import PredictionResult from './components/PredictionResult';
 import TransactionHistory from './components/TransactionHistory';
 import ModelInfo from './components/ModelInfo';
-import { checkHealth } from './services/api';
-import { Shield, AlertTriangle, Activity } from 'lucide-react';
+import Login from './components/Login';
+import { checkHealth, getMe, logout, isAuthenticated } from './services/api';
+import { Shield, AlertTriangle, Activity, LogOut, User } from 'lucide-react';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [prediction, setPrediction] = useState(null);
   const [history, setHistory] = useState([]);
   const [apiStatus, setApiStatus] = useState('checking');
+  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
 
   useEffect(() => {
     const checkApiStatus = async () => {
@@ -28,6 +31,42 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      loadUser();
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    const handleLogout = () => {
+      setIsLoggedIn(false);
+      setUser(null);
+    };
+
+    window.addEventListener('auth-logout', handleLogout);
+    return () => window.removeEventListener('auth-logout', handleLogout);
+  }, []);
+
+  const loadUser = async () => {
+    try {
+      const userData = await getMe();
+      setUser(userData);
+    } catch (error) {
+      setIsLoggedIn(false);
+      setUser(null);
+    }
+  };
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsLoggedIn(false);
+    setUser(null);
+  };
+
   const handlePrediction = (result, transaction) => {
     setPrediction(result);
     setHistory(prev => [{
@@ -43,6 +82,11 @@ function App() {
     { id: 'predict', label: 'Analyzer', icon: Shield },
     { id: 'model', label: 'Model Info', icon: AlertTriangle },
   ];
+
+  // Show login screen if not authenticated
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -69,6 +113,25 @@ function App() {
                   {apiStatus === 'no-model' && 'Model Not Loaded'}
                   {apiStatus === 'checking' && 'Checking...'}
                 </span>
+              </div>
+
+              {/* User menu */}
+              <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {user?.full_name || user?.username || 'User'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
@@ -135,7 +198,7 @@ function App() {
                 API Documentation
               </a>
               <a
-                href="https://github.com"
+                href="https://github.com/Nostradam4ik/fraud-detection-ml"
                 target="_blank"
                 className="text-sm text-primary-600 hover:text-primary-700"
               >

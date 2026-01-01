@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
 
+    # JWT Authentication
+    secret_key: str = "your-super-secret-key-change-in-production-2024"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+
     @property
     def cors_origins_list(self) -> List[str]:
         """Parse CORS origins from comma-separated string"""

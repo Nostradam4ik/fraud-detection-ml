@@ -167,3 +167,86 @@ class HealthResponse(BaseModel):
     model_loaded: bool
     version: str
     timestamp: datetime
+
+
+# ============== Authentication Schemas ==============
+
+class UserCreate(BaseModel):
+    """Schema for user registration"""
+
+    username: str = Field(..., min_length=3, max_length=50, description="Username")
+    email: str = Field(..., description="Email address")
+    password: str = Field(..., min_length=8, description="Password (min 8 characters)")
+    full_name: Optional[str] = Field(None, description="Full name")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "username": "john_doe",
+                "email": "john@example.com",
+                "password": "securepassword123",
+                "full_name": "John Doe"
+            }
+        }
+
+
+class UserResponse(BaseModel):
+    """Schema for user response (without password)"""
+
+    id: str
+    username: str
+    email: str
+    full_name: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": "user_123",
+                "username": "john_doe",
+                "email": "john@example.com",
+                "full_name": "John Doe",
+                "is_active": True,
+                "created_at": "2024-01-01T00:00:00"
+            }
+        }
+
+
+class UserLogin(BaseModel):
+    """Schema for user login"""
+
+    username: str = Field(..., description="Username or email")
+    password: str = Field(..., description="Password")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "username": "john_doe",
+                "password": "securepassword123"
+            }
+        }
+
+
+class Token(BaseModel):
+    """Schema for JWT token response"""
+
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int = Field(..., description="Token expiration time in seconds")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token_type": "bearer",
+                "expires_in": 3600
+            }
+        }
+
+
+class TokenData(BaseModel):
+    """Schema for decoded token data"""
+
+    username: Optional[str] = None
+    user_id: Optional[str] = None

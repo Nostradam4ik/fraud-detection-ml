@@ -46,6 +46,7 @@ A **machine learning-powered fraud detection system** for credit card transactio
 ## Features
 
 - **Real-time Fraud Detection** - Predict fraud probability in milliseconds
+- **JWT Authentication** - Secure API with user registration and login
 - **RESTful API** - Well-documented API with automatic Swagger documentation
 - **Interactive Dashboard** - React-based UI for transaction analysis
 - **Batch Processing** - Analyze multiple transactions at once
@@ -142,12 +143,25 @@ docker-compose up --build
 
 ## API Endpoints
 
+### Authentication (Public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/v1/auth/register` | Register a new user |
+| `POST` | `/api/v1/auth/login` | Login and get JWT token |
+| `GET` | `/api/v1/auth/me` | Get current user profile (requires auth) |
+| `POST` | `/api/v1/auth/refresh` | Refresh JWT token (requires auth) |
+
+### Predictions (Requires Authentication)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/v1/predict` | Predict fraud for a single transaction |
 | `POST` | `/api/v1/predict/batch` | Predict fraud for multiple transactions |
 | `GET` | `/api/v1/predict/sample/legitimate` | Get sample legitimate transaction |
 | `GET` | `/api/v1/predict/sample/fraud` | Get sample fraud transaction |
+
+### Analytics & Health (Public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
 | `GET` | `/api/v1/analytics/stats` | Get API usage statistics |
 | `GET` | `/api/v1/analytics/model` | Get model information |
 | `GET` | `/api/v1/analytics/features` | Get feature importance |
