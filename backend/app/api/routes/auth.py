@@ -8,8 +8,10 @@ Copyright (c) 2024 - All Rights Reserved
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
 from ...core.config import settings
+from ...db.database import get_db
 from ...models.schemas import Token, UserCreate, UserLogin, UserResponse
 from ...services.auth_service import (
     authenticate_user,
@@ -28,7 +30,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     summary="Register a new user",
     description="Create a new user account with username, email, and password."
 )
-async def register(user_data: UserCreate):
+async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """
     Register a new user account.
 
@@ -37,7 +39,7 @@ async def register(user_data: UserCreate):
     - **password**: Password (minimum 8 characters)
     - **full_name**: Optional full name
     """
-    return create_user(user_data)
+    return create_user(db, user_data)
 
 
 @router.post(
@@ -46,14 +48,14 @@ async def register(user_data: UserCreate):
     summary="Login to get access token",
     description="Authenticate with username/email and password to receive a JWT token."
 )
-async def login(credentials: UserLogin):
+async def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """
     Login with username or email and password.
 
     Returns a JWT access token that can be used to access protected endpoints.
     Include the token in the Authorization header: `Bearer <token>`
     """
-    user = authenticate_user(credentials.username, credentials.password)
+    user = authenticate_user(db, credentials.username, credentials.password)
 
     if not user:
         raise HTTPException(
@@ -65,7 +67,7 @@ async def login(credentials: UserLogin):
     # Create access token
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
-        data={"sub": user["username"], "user_id": user["id"]},
+        data={"sub": user.username, "user_id": str(user.id)},
         expires_delta=access_token_expires
     )
 

@@ -81,3 +81,8 @@ coverage.xml
 # mypy
 .mypy_cache/
 .claude/
+
+# SQLite Database
+*.db
+*.sqlite
+*.sqlite3

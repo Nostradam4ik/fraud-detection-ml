@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api import router
 from .core.config import settings
 from .models.ml_model import fraud_model
+from .db.database import init_db
 
 # Configure logging
 logging.basicConfig(
@@ -33,6 +34,11 @@ async def lifespan(app: FastAPI):
     """Application lifespan - startup and shutdown events"""
     # Startup
     logger.info("Starting Fraud Detection API...")
+
+    # Initialize database
+    logger.info("Initializing database...")
+    init_db()
+    logger.info("Database initialized successfully")
 
     # Get the backend directory path
     backend_dir = Path(__file__).parent.parent

@@ -5,23 +5,22 @@ Author: Zhmuryk Andrii
 Copyright (c) 2024 - All Rights Reserved
 """
 
-import uuid
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Optional
 
 import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 
 from ..core.config import settings
+from ..db.database import get_db
+from ..db.models import User
 from ..models.schemas import TokenData, UserCreate, UserResponse
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
-
-# In-memory user storage (in production, use a database)
-users_db: Dict[str, dict] = {}
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -79,89 +78,89 @@ def decode_token(token: str) -> TokenData:
         )
 
 
-def get_user_by_username(username: str) -> Optional[dict]:
-    """Get a user by username"""
-    for user_id, user in users_db.items():
-        if user["username"] == username:
-            return {**user, "id": user_id}
-    return None
+def get_user_by_username(db: Session, username: str) -> Optional[User]:
+    """Get a user by username from database"""
+    return db.query(User).filter(User.username == username).first()
 
 
-def get_user_by_email(email: str) -> Optional[dict]:
-    """Get a user by email"""
-    for user_id, user in users_db.items():
-        if user["email"] == email:
-            return {**user, "id": user_id}
-    return None
+def get_user_by_email(db: Session, email: str) -> Optional[User]:
+    """Get a user by email from database"""
+    return db.query(User).filter(User.email == email).first()
 
 
-def create_user(user_data: UserCreate) -> UserResponse:
-    """Create a new user"""
+def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
+    """Get a user by ID from database"""
+    return db.query(User).filter(User.id == user_id).first()
+
+
+def create_user(db: Session, user_data: UserCreate) -> UserResponse:
+    """Create a new user in database"""
     # Check if username already exists
-    if get_user_by_username(user_data.username):
+    if get_user_by_username(db, user_data.username):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered"
         )
 
     # Check if email already exists
-    if get_user_by_email(user_data.email):
+    if get_user_by_email(db, user_data.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
 
     # Create user
-    user_id = f"user_{uuid.uuid4().hex[:8]}"
     hashed_password = get_password_hash(user_data.password)
 
-    user = {
-        "username": user_data.username,
-        "email": user_data.email,
-        "full_name": user_data.full_name,
-        "hashed_password": hashed_password,
-        "is_active": True,
-        "created_at": datetime.utcnow()
-    }
+    db_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        full_name=user_data.full_name,
+        hashed_password=hashed_password,
+        is_active=True
+    )
 
-    users_db[user_id] = user
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
 
     return UserResponse(
-        id=user_id,
-        username=user["username"],
-        email=user["email"],
-        full_name=user["full_name"],
-        is_active=user["is_active"],
-        created_at=user["created_at"]
+        id=str(db_user.id),
+        username=db_user.username,
+        email=db_user.email,
+        full_name=db_user.full_name,
+        is_active=db_user.is_active,
+        created_at=db_user.created_at
     )
 
 
-def authenticate_user(username: str, password: str) -> Optional[dict]:
+def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
     """Authenticate a user by username/email and password"""
     # Try to find by username
-    user = get_user_by_username(username)
+    user = get_user_by_username(db, username)
 
     # If not found, try by email
     if not user:
-        user = get_user_by_email(username)
+        user = get_user_by_email(db, username)
 
     if not user:
         return None
 
-    if not verify_password(password, user["hashed_password"]):
+    if not verify_password(password, user.hashed_password):
         return None
 
     return user
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
 ) -> UserResponse:
     """Get current authenticated user from JWT token"""
     token = credentials.credentials
     token_data = decode_token(token)
 
-    user = get_user_by_username(token_data.username)
+    user = get_user_by_username(db, token_data.username)
 
     if user is None:
         raise HTTPException(
@@ -170,31 +169,46 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if not user.get("is_active", False):
+    if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is disabled"
         )
 
     return UserResponse(
-        id=user["id"],
-        username=user["username"],
-        email=user["email"],
-        full_name=user.get("full_name"),
-        is_active=user["is_active"],
-        created_at=user["created_at"]
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        is_active=user.is_active,
+        created_at=user.created_at
     )
 
 
 # Optional: Get current user (returns None if not authenticated)
 async def get_current_user_optional(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
+    db: Session = Depends(get_db)
 ) -> Optional[UserResponse]:
     """Get current user if authenticated, otherwise return None"""
     if credentials is None:
         return None
 
     try:
-        return await get_current_user(credentials)
+        token = credentials.credentials
+        token_data = decode_token(token)
+        user = get_user_by_username(db, token_data.username)
+
+        if user and user.is_active:
+            return UserResponse(
+                id=str(user.id),
+                username=user.username,
+                email=user.email,
+                full_name=user.full_name,
+                is_active=user.is_active,
+                created_at=user.created_at
+            )
     except HTTPException:
-        return None
+        pass
+
+    return None
