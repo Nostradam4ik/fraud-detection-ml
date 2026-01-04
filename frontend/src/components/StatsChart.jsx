@@ -41,12 +41,12 @@ function StatsChart({ fraudCount, legitimateCount }) {
       const data = payload[0];
       const percentage = ((data.value / total) * 100).toFixed(1);
       return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-medium text-gray-900">{data.name}</p>
-          <p className="text-sm text-gray-600">
+        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+          <p className="font-medium text-gray-900 dark:text-white">{data.name}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Count: <span className="font-semibold">{data.value.toLocaleString()}</span>
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Percentage: <span className="font-semibold">{percentage}%</span>
           </p>
         </div>
@@ -76,7 +76,7 @@ function StatsChart({ fraudCount, legitimateCount }) {
           verticalAlign="bottom"
           height={36}
           formatter={(value, entry) => (
-            <span className="text-sm text-gray-700">{value}</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{value}</span>
           )}
         />
       </PieChart>

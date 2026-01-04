@@ -10,23 +10,32 @@ Copyright (c) 2024 - All Rights Reserved
 """
 
 import logging
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from .api import router
 from .core.config import settings
+from .core.rate_limit import limiter, RateLimitHeaderMiddleware, rate_limit_exceeded_handler, get_rate_limit_status
+from .core.logging_config import setup_logging, RequestLogger
+from .core.security_headers import SecurityHeadersMiddleware
 from .models.ml_model import fraud_model
 from .db.database import init_db
 
-# Configure logging
-logging.basicConfig(
-    level=getattr(logging, settings.log_level),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+# Configure structured logging
+setup_logging(
+    log_level=settings.log_level,
+    log_dir="logs",
+    json_logs=not settings.debug  # JSON in production, colored in dev
 )
 logger = logging.getLogger(__name__)
+request_logger = RequestLogger()
 
 
 @asynccontextmanager
@@ -101,6 +110,19 @@ Copyright (c) 2024 - All Rights Reserved
     lifespan=lifespan,
 )
 
+# Add rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# Add GZip compression middleware (compress responses > 500 bytes)
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
+# Add security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Add rate limit header middleware
+app.add_middleware(RateLimitHeaderMiddleware)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -108,10 +130,36 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[
+        "X-Batch-ID", "X-Total-Rows", "X-Fraud-Count", "X-Legitimate-Count", "Content-Disposition",
+        "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After"
+    ],
 )
 
 # Include API routes
 app.include_router(router, prefix=settings.api_v1_prefix)
+
+
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all HTTP requests"""
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    duration_ms = (time.time() - start_time) * 1000
+
+    # Log the request
+    request_logger.log_request(
+        method=request.method,
+        path=request.url.path,
+        status_code=response.status_code,
+        duration_ms=duration_ms,
+        client_ip=request.client.host if request.client else None
+    )
+
+    return response
 
 
 @app.get("/", tags=["Root"])

@@ -103,11 +103,42 @@ class TestDataProcessor:
 class TestInputValidation:
     """Tests for input validation"""
 
+    @classmethod
+    def setup_class(cls):
+        """Setup authentication for validation tests - run once for the class"""
+        import uuid
+        unique_id = uuid.uuid4().hex[:8]
+
+        # Register a unique test user
+        client.post(
+            "/api/v1/auth/register",
+            json={
+                "username": f"validation_user_{unique_id}",
+                "email": f"validation_{unique_id}@test.com",
+                "password": "TestPassword123!",
+                "full_name": "Validation Test"
+            }
+        )
+        # Login to get token (using JSON body)
+        response = client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": f"validation_user_{unique_id}",
+                "password": "TestPassword123!"
+            }
+        )
+        if response.status_code == 200:
+            cls.token = response.json()["access_token"]
+            cls.headers = {"Authorization": f"Bearer {cls.token}"}
+        else:
+            cls.headers = {}
+
     def test_invalid_transaction_missing_fields(self):
         """Test that missing fields return 422"""
         response = client.post(
             "/api/v1/predict",
             json={"time": 0, "amount": 100},  # Missing V1-V28
+            headers=self.headers
         )
         assert response.status_code == 422
 
@@ -116,5 +147,5 @@ class TestInputValidation:
         sample = DataProcessor.generate_sample_transaction()
         sample["amount"] = -100
 
-        response = client.post("/api/v1/predict", json=sample)
+        response = client.post("/api/v1/predict", json=sample, headers=self.headers)
         assert response.status_code == 422

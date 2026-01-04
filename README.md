@@ -4,9 +4,11 @@
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688.svg)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://reactjs.org)
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready-5A0FC8.svg)](https://web.dev/progressive-web-apps/)
+[![i18n](https://img.shields.io/badge/i18n-EN%20%7C%20FR%20%7C%20UA-green.svg)](#internationalization)
 [![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red.svg)](LICENSE)
 
-A **machine learning-powered fraud detection system** for credit card transactions. Built with FastAPI, scikit-learn, and React.
+A **machine learning-powered fraud detection system** for credit card transactions. Built with FastAPI, scikit-learn, and React. Features a Progressive Web App (PWA) with multi-language support and mobile-first design.
 
 ---
 
@@ -45,35 +47,90 @@ A **machine learning-powered fraud detection system** for credit card transactio
 
 ## Features
 
+### Core Features
 - **Real-time Fraud Detection** - Predict fraud probability in milliseconds
-- **JWT Authentication** - Secure API with user registration and login
-- **RESTful API** - Well-documented API with automatic Swagger documentation
-- **Interactive Dashboard** - React-based UI for transaction analysis
-- **Batch Processing** - Analyze multiple transactions at once
+- **Batch Processing** - Analyze multiple transactions via CSV upload
 - **Model Insights** - View feature importance and performance metrics
+- **Advanced Analytics** - Time series charts, trend analysis, and filters
+
+### Progressive Web App (PWA)
+- **Installable** - Add to home screen on mobile and desktop
+- **Offline Support** - Service worker caching for offline functionality
+- **Push Notifications** - Real-time fraud alerts
+- **Background Sync** - Queue predictions when offline
+
+### Internationalization (i18n)
+- **Multi-language Support** - English, French, and Ukrainian
+- **Easy Language Switching** - One-click language selector
+- **Fully Translated UI** - All components support translations
+- **Locale-aware Formatting** - Dates, numbers, and currencies
+
+### Mobile-First Design
+- **Responsive Layout** - Optimized for all screen sizes
+- **Bottom Navigation** - Touch-friendly mobile navigation bar
+- **Safe Area Support** - Proper handling for notched devices
+- **44px Touch Targets** - Accessible touch interactions
+- **Skeleton Loading** - Smooth loading states
+
+### Security & Authentication
+- **JWT Authentication** - Secure API with access and refresh tokens
+- **Two-Factor Authentication (2FA)** - TOTP-based 2FA with QR code setup
+- **Password Policies** - Strong password requirements with strength meter
+- **Rate Limiting** - Protect API from abuse with configurable limits
+- **Session Management** - View and revoke active sessions
+- **Audit Logging** - Track all user actions for compliance
+
+### Enterprise Features
+- **Team Management** - Create teams, invite members, manage roles
+- **Role-Based Access Control** - Admin, Analyst, and Viewer roles
+- **Report Generation** - Export PDF/CSV reports with date filtering
+- **Webhook Notifications** - Send real-time alerts to external systems
+- **Email Alerts** - Get notified on fraud detection
+- **GDPR Compliance** - Export/delete user data
+
+### Performance Optimizations
+- **Lazy Loading** - Code splitting for faster initial load
+- **Vendor Chunking** - Separate bundles for better caching
+- **API Response Caching** - In-memory cache with TTL
+- **Optimized Bundle** - ES2020 target, tree shaking
+- **Service Worker Caching** - Static assets cached for offline use
+
+### Developer Experience
+- **RESTful API** - Well-documented API with Swagger/OpenAPI
+- **Interactive Dashboard** - React-based UI with dark mode
 - **Docker Ready** - Easy deployment with Docker Compose
 - **CI/CD Pipeline** - Automated testing with GitHub Actions
+- **44 Unit Tests** - Comprehensive test coverage
 
 ## Tech Stack
 
 ### Backend
 - **Python 3.11** - Core language
 - **FastAPI** - High-performance API framework
+- **SQLAlchemy** - ORM with SQLite/PostgreSQL
 - **scikit-learn** - Machine learning (Random Forest)
-- **Pydantic** - Data validation
-- **pytest** - Testing framework
+- **python-jose** - JWT token handling
+- **passlib + bcrypt** - Secure password hashing
+- **pyotp** - TOTP for 2FA
+- **slowapi** - Rate limiting
+- **reportlab** - PDF generation
+- **httpx** - Async HTTP for webhooks
+- **pytest** - Testing framework (44 tests)
 
 ### Frontend
 - **React 18** - UI framework
-- **Vite** - Build tool
-- **TailwindCSS** - Styling
+- **Vite** - Build tool with optimized chunking
+- **TailwindCSS** - Styling with dark mode
 - **Recharts** - Data visualization
-- **Axios** - HTTP client
+- **Axios** - HTTP client with caching
+- **Lucide React** - Icon library
+- **Custom i18n** - Lightweight internationalization
 
 ### DevOps
-- **Docker** - Containerization
-- **GitHub Actions** - CI/CD
-- **nginx** - Reverse proxy
+- **Docker** - Containerization with multi-stage builds
+- **GitHub Actions** - CI/CD pipeline
+- **nginx** - Reverse proxy with caching headers
+- **Kubernetes** - K8s manifests included
 
 ## Quick Start
 
@@ -141,31 +198,152 @@ docker-compose up --build
 # API: http://localhost:8000
 ```
 
+## Internationalization
+
+The application supports multiple languages out of the box:
+
+| Language | Code | Flag |
+|----------|------|------|
+| English | `en` | 🇺🇸 |
+| French | `fr` | 🇫🇷 |
+| Ukrainian | `ua` | 🇺🇦 |
+
+### Adding a New Language
+
+1. Create a new locale file: `frontend/src/i18n/locales/{code}.json`
+2. Copy the structure from `en.json`
+3. Translate all strings
+4. Add the language to `frontend/src/i18n/index.jsx`:
+
+```javascript
+const languages = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'ua', name: 'Українська', flag: '🇺🇦' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' }, // Add new language
+];
+```
+
+### Using Translations in Components
+
+```jsx
+import { useI18n } from '../i18n/index.jsx';
+
+function MyComponent() {
+  const { t } = useI18n();
+
+  return (
+    <div>
+      <h1>{t('dashboard.title')}</h1>
+      <p>{t('common.loading')}</p>
+    </div>
+  );
+}
+```
+
+## PWA Features
+
+### Installation
+
+The app can be installed on:
+- **Desktop**: Chrome, Edge, Firefox (Add to Desktop)
+- **Mobile**: iOS Safari (Add to Home Screen), Android Chrome
+
+### Offline Support
+
+The service worker caches:
+- Static assets (JS, CSS, images)
+- API responses (with network-first strategy)
+- App shell for offline access
+
+### Push Notifications
+
+Enable push notifications to receive:
+- Real-time fraud alerts
+- Batch processing completion
+- System updates
+
 ## API Endpoints
 
-### Authentication (Public)
+### Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/v1/auth/register` | Register a new user |
-| `POST` | `/api/v1/auth/login` | Login and get JWT token |
-| `GET` | `/api/v1/auth/me` | Get current user profile (requires auth) |
-| `POST` | `/api/v1/auth/refresh` | Refresh JWT token (requires auth) |
+| `POST` | `/api/v1/auth/login` | Login with optional 2FA |
+| `POST` | `/api/v1/auth/refresh` | Refresh access token |
+| `POST` | `/api/v1/auth/logout` | Revoke refresh token |
+| `GET` | `/api/v1/auth/me` | Get current user profile |
+| `POST` | `/api/v1/auth/2fa/setup` | Setup 2FA (get QR code) |
+| `POST` | `/api/v1/auth/2fa/verify` | Verify and enable 2FA |
+| `POST` | `/api/v1/auth/2fa/disable` | Disable 2FA |
+| `POST` | `/api/v1/auth/forgot-password` | Request password reset |
+| `POST` | `/api/v1/auth/reset-password` | Reset password with token |
+| `POST` | `/api/v1/auth/change-password` | Change current password |
+| `GET` | `/api/v1/auth/sessions` | List active sessions |
+| `DELETE` | `/api/v1/auth/sessions/{id}` | Revoke a session |
+| `GET` | `/api/v1/auth/export-data` | Export all user data (GDPR) |
 
-### Predictions (Requires Authentication)
+### Predictions
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/predict` | Predict fraud for a single transaction |
-| `POST` | `/api/v1/predict/batch` | Predict fraud for multiple transactions |
-| `GET` | `/api/v1/predict/sample/legitimate` | Get sample legitimate transaction |
-| `GET` | `/api/v1/predict/sample/fraud` | Get sample fraud transaction |
+| `POST` | `/api/v1/predict` | Predict fraud for a transaction |
+| `POST` | `/api/v1/predict/batch` | Batch prediction (JSON) |
+| `POST` | `/api/v1/predict/upload-csv` | Batch prediction (CSV file) |
+| `GET` | `/api/v1/predict/history` | Get prediction history |
+| `GET` | `/api/v1/predict/stats` | Get user prediction stats |
+| `GET` | `/api/v1/predict/sample/{type}` | Get sample transaction |
 
-### Analytics & Health (Public)
+### Reports
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/v1/analytics/stats` | Get API usage statistics |
-| `GET` | `/api/v1/analytics/model` | Get model information |
-| `GET` | `/api/v1/analytics/features` | Get feature importance |
+| `GET` | `/api/v1/reports` | List generated reports |
+| `POST` | `/api/v1/reports/generate` | Generate PDF/CSV report |
+| `GET` | `/api/v1/reports/{id}` | Get report details |
+| `GET` | `/api/v1/reports/{id}/download` | Download report file |
+
+### Teams
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/teams` | List user's teams |
+| `POST` | `/api/v1/teams` | Create a new team |
+| `GET` | `/api/v1/teams/{id}` | Get team details |
+| `POST` | `/api/v1/teams/{id}/invite` | Invite member to team |
+| `DELETE` | `/api/v1/teams/{id}/members/{user_id}` | Remove member |
+
+### Webhooks
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/webhooks` | List webhooks |
+| `POST` | `/api/v1/webhooks` | Create webhook |
+| `PUT` | `/api/v1/webhooks/{id}` | Update webhook |
+| `DELETE` | `/api/v1/webhooks/{id}` | Delete webhook |
+| `POST` | `/api/v1/webhooks/{id}/test` | Test webhook |
+
+### Alerts
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/alerts` | List email alerts |
+| `POST` | `/api/v1/alerts` | Create alert rule |
+| `PUT` | `/api/v1/alerts/{id}` | Update alert |
+| `DELETE` | `/api/v1/alerts/{id}` | Delete alert |
+
+### Admin (Admin role required)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/admin/users` | List all users |
+| `GET` | `/api/v1/admin/stats` | System-wide statistics |
+| `PUT` | `/api/v1/admin/users/{id}/role` | Update user role |
+| `PUT` | `/api/v1/admin/users/{id}/status` | Activate/deactivate user |
+| `GET` | `/api/v1/admin/audit-logs` | View audit logs |
+
+### Analytics & Health
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/analytics/stats` | API usage statistics |
+| `GET` | `/api/v1/analytics/model` | Model information |
+| `GET` | `/api/v1/analytics/features` | Feature importance |
 | `GET` | `/api/v1/health` | Health check |
+| `GET` | `/api/v1/rate-limit` | Current rate limit status |
 
 ### Example Request
 
@@ -223,21 +401,58 @@ The dataset is highly imbalanced (0.17% fraud). We address this using:
 fraud-detection-ml/
 ├── backend/
 │   ├── app/
-│   │   ├── api/routes/      # API endpoints
-│   │   ├── core/            # Configuration
+│   │   ├── api/routes/      # API endpoints (auth, predict, admin, etc.)
+│   │   ├── core/            # Config, rate limiting, logging
+│   │   ├── db/              # Database models and connection
 │   │   ├── models/          # Pydantic schemas & ML model
-│   │   └── services/        # Business logic
-│   ├── ml/                  # Training scripts
-│   ├── tests/               # Unit tests
+│   │   └── services/        # Business logic (auth, teams, webhooks, etc.)
+│   ├── ml/                  # Model training scripts
+│   ├── tests/               # Unit tests (44 tests)
+│   ├── logs/                # Application logs
 │   └── Dockerfile
 ├── frontend/
+│   ├── public/
+│   │   ├── icons/           # PWA icons (SVG)
+│   │   ├── manifest.json    # PWA manifest
+│   │   └── sw.js            # Service worker
 │   ├── src/
 │   │   ├── components/      # React components
-│   │   └── services/        # API client
+│   │   ├── i18n/            # Internationalization
+│   │   │   ├── locales/     # Translation files (en, fr, ua)
+│   │   │   └── index.jsx    # i18n context provider
+│   │   ├── hooks/           # Custom React hooks
+│   │   └── services/        # API client with caching
+│   ├── vite.config.js       # Vite config with chunking
 │   └── Dockerfile
-├── .github/workflows/       # CI/CD
+├── k8s/                     # Kubernetes manifests
+├── monitoring/              # Prometheus & Grafana configs
+├── .github/workflows/       # CI/CD pipeline
 ├── docker-compose.yml
 └── README.md
+```
+
+## Environment Variables
+
+Create a `.env` file in the backend directory:
+
+```env
+# Required
+SECRET_KEY=your-super-secret-key-here
+DATABASE_URL=sqlite:///./fraud_detection.db
+
+# Optional
+DEBUG=false
+LOG_LEVEL=INFO
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+RATE_LIMIT_PER_MINUTE=60
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Email (optional - for alerts)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
 ```
 
 ## Development
@@ -245,9 +460,12 @@ fraud-detection-ml/
 ### Running Tests
 
 ```bash
-# Backend tests
+# Backend tests (44 tests)
 cd backend
 pytest tests/ -v
+
+# With coverage
+pytest tests/ -v --cov=app
 
 # Frontend build
 cd frontend
@@ -265,6 +483,18 @@ isort backend/app
 flake8 backend/app
 ```
 
+### Frontend Build Analysis
+
+The optimized build creates separate vendor chunks:
+
+| Chunk | Size (gzip) | Description |
+|-------|-------------|-------------|
+| vendor-react | 45 KB | React core |
+| vendor-recharts | 112 KB | Charts library |
+| vendor-icons | 4 KB | Lucide icons |
+| vendor-utils | 15 KB | Axios |
+| index | 23 KB | App code |
+
 ## Deployment
 
 ### Railway (Free Tier)
@@ -280,9 +510,41 @@ flake8 backend/app
 2. Create a Static Site for frontend
 3. Configure environment variables
 
+### Docker Production
+
+```bash
+# Build optimized images
+docker-compose -f docker-compose.prod.yml build
+
+# Run with production settings
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## Security Features
+
+- **Password Policy**: Minimum 8 characters with uppercase, lowercase, digit, and special character
+- **JWT Tokens**: Short-lived access tokens (30 min) with refresh token rotation
+- **2FA**: TOTP-based two-factor authentication
+- **Rate Limiting**: 60 requests/minute per user (configurable)
+- **Audit Logging**: All actions logged with IP and user agent
+- **CORS**: Configurable allowed origins
+- **HTTPS Ready**: Works behind reverse proxy with HTTPS
+- **CSP Headers**: Content Security Policy for XSS protection
+
+## Browser Support
+
+| Browser | Version |
+|---------|---------|
+| Chrome | 90+ |
+| Firefox | 88+ |
+| Safari | 14+ |
+| Edge | 90+ |
+| Mobile Safari | 14+ |
+| Chrome Android | 90+ |
+
 ## License
 
-**All Rights Reserved** - Copyright (c) 2024 Zhmuryk Andrii
+**All Rights Reserved** - Copyright (c) 2024-2025 Zhmuryk Andrii
 
 This project is protected by copyright. You may view this code for educational and reference purposes only. Any copying, modification, distribution, or commercial use is strictly prohibited without prior written permission from the author.
 

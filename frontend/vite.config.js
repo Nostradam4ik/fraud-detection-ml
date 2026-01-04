@@ -12,4 +12,30 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // Improve chunk splitting for better caching
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks - rarely change, cached long-term
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-recharts': ['recharts'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-utils': ['axios'],
+        },
+      },
+    },
+    // Enable source maps for debugging
+    sourcemap: false,
+    // Minify with terser for better compression
+    minify: 'esbuild',
+    // Target modern browsers for smaller bundle
+    target: 'es2020',
+    // Chunk size warning threshold
+    chunkSizeWarningLimit: 500,
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'axios', 'lucide-react', 'recharts'],
+  },
 })

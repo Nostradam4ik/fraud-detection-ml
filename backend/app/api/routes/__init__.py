@@ -6,6 +6,13 @@ from .prediction import router as prediction_router
 from .analytics import router as analytics_router
 from .health import router as health_router
 from .auth import router as auth_router
+from .admin import router as admin_router
+from .teams import router as teams_router
+from .alerts import router as alerts_router
+from .reports import router as reports_router
+from .websocket import router as websocket_router
+from .webhooks import router as webhooks_router
+from .api_keys import router as api_keys_router
 
 router = APIRouter()
 
@@ -14,3 +21,10 @@ router.include_router(auth_router)  # Authentication routes
 router.include_router(prediction_router, prefix="/predict", tags=["Predictions"])
 router.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
 router.include_router(health_router, tags=["Health"])
+router.include_router(admin_router)  # Admin routes (has own prefix)
+router.include_router(teams_router)  # Team management routes (has own prefix)
+router.include_router(alerts_router)  # Email alerts routes (has own prefix)
+router.include_router(reports_router)  # PDF reports routes (has own prefix)
+router.include_router(websocket_router)  # WebSocket routes
+router.include_router(webhooks_router)  # Webhook routes (has own prefix)
+router.include_router(api_keys_router)  # API keys routes (has own prefix)

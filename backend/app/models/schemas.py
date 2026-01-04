@@ -1,7 +1,7 @@
 """Pydantic schemas for API request/response validation"""
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from pydantic import BaseModel, Field
 
@@ -92,6 +92,7 @@ class PredictionResponse(BaseModel):
     confidence: str = Field(..., description="Confidence level: low, medium, high")
     risk_score: int = Field(..., ge=0, le=100, description="Risk score (0-100)")
     prediction_time_ms: float = Field(..., description="Prediction time in milliseconds")
+    shap_values: Optional[Dict[str, float]] = Field(None, description="SHAP feature explanations")
 
     class Config:
         json_schema_extra = {
@@ -131,6 +132,7 @@ class BatchPredictionResponse(BaseModel):
     fraud_rate: float
     results: List[SingleBatchResult]
     processing_time_ms: float
+    batch_id: Optional[str] = None
 
 
 class ModelInfo(BaseModel):
@@ -198,6 +200,8 @@ class UserResponse(BaseModel):
     email: str
     full_name: Optional[str] = None
     is_active: bool = True
+    role: str = "viewer"
+    is_2fa_enabled: bool = False
     created_at: datetime
 
     class Config:
@@ -208,6 +212,8 @@ class UserResponse(BaseModel):
                 "email": "john@example.com",
                 "full_name": "John Doe",
                 "is_active": True,
+                "role": "viewer",
+                "is_2fa_enabled": False,
                 "created_at": "2024-01-01T00:00:00"
             }
         }
@@ -218,6 +224,7 @@ class UserLogin(BaseModel):
 
     username: str = Field(..., description="Username or email")
     password: str = Field(..., description="Password")
+    totp_code: Optional[str] = Field(None, description="2FA code (if enabled)")
 
     class Config:
         json_schema_extra = {
@@ -232,6 +239,7 @@ class Token(BaseModel):
     """Schema for JWT token response"""
 
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str = "bearer"
     expires_in: int = Field(..., description="Token expiration time in seconds")
 
@@ -239,10 +247,17 @@ class Token(BaseModel):
         json_schema_extra = {
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "refresh_token": "abc123...",
                 "token_type": "bearer",
-                "expires_in": 3600
+                "expires_in": 1800
             }
         }
+
+
+class RefreshTokenRequest(BaseModel):
+    """Schema for refresh token request"""
+
+    refresh_token: str = Field(..., description="Refresh token")
 
 
 class TokenData(BaseModel):
@@ -250,3 +265,204 @@ class TokenData(BaseModel):
 
     username: Optional[str] = None
     user_id: Optional[str] = None
+
+
+class PasswordResetRequest(BaseModel):
+    """Schema for password reset request"""
+
+    email: str = Field(..., description="Email address")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "john@example.com"
+            }
+        }
+
+
+class PasswordReset(BaseModel):
+    """Schema for password reset with token"""
+
+    token: str = Field(..., description="Password reset token")
+    new_password: str = Field(..., min_length=8, description="New password (min 8 characters)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "token": "reset_token_here",
+                "new_password": "newSecurePassword123"
+            }
+        }
+
+
+class PasswordResetResponse(BaseModel):
+    """Response for password reset request"""
+
+    message: str
+    reset_token: Optional[str] = None  # Only for demo purposes
+
+
+# ============== 2FA Schemas ==============
+
+class TwoFactorSetupResponse(BaseModel):
+    """Response for 2FA setup"""
+
+    secret: str
+    qr_code: str  # Base64 encoded QR code image
+    message: str
+
+
+class TwoFactorVerifyRequest(BaseModel):
+    """Request to verify 2FA code"""
+
+    code: str = Field(..., min_length=6, max_length=6, description="6-digit TOTP code")
+
+
+class TwoFactorDisableRequest(BaseModel):
+    """Request to disable 2FA"""
+
+    password: str = Field(..., description="Current password for verification")
+
+
+# ============== Team Schemas ==============
+
+class TeamCreate(BaseModel):
+    """Schema for team creation"""
+
+    name: str = Field(..., min_length=2, max_length=100, description="Team name")
+    description: Optional[str] = Field(None, description="Team description")
+
+
+class TeamResponse(BaseModel):
+    """Schema for team response"""
+
+    id: int
+    name: str
+    description: Optional[str] = None
+    owner_id: int
+    is_active: bool
+    member_count: int = 0
+    created_at: datetime
+
+
+class TeamMemberAdd(BaseModel):
+    """Schema for adding a team member"""
+
+    user_id: int = Field(..., description="User ID to add")
+
+
+# ============== Audit Log Schemas ==============
+
+class AuditLogResponse(BaseModel):
+    """Schema for audit log response"""
+
+    id: int
+    user_id: Optional[int]
+    username: Optional[str]
+    action: str
+    resource_type: Optional[str]
+    resource_id: Optional[str]
+    details: Optional[str]
+    ip_address: Optional[str]
+    created_at: datetime
+
+
+class AuditLogFilter(BaseModel):
+    """Schema for filtering audit logs"""
+
+    user_id: Optional[int] = None
+    action: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    limit: int = Field(default=100, le=1000)
+
+
+# ============== Email Alert Schemas ==============
+
+class EmailAlertCreate(BaseModel):
+    """Schema for creating email alert"""
+
+    email: str = Field(..., description="Email address to send alerts")
+    alert_type: str = Field(..., description="Type: fraud_detected, daily_report, weekly_report")
+    threshold: Optional[float] = Field(None, ge=0, le=1, description="Fraud probability threshold")
+
+
+class EmailAlertResponse(BaseModel):
+    """Schema for email alert response"""
+
+    id: int
+    email: str
+    alert_type: str
+    threshold: Optional[float]
+    is_active: bool
+    created_at: datetime
+
+
+# ============== Model Training Schemas ==============
+
+class ModelTrainRequest(BaseModel):
+    """Schema for model training request"""
+
+    model_type: str = Field(default="random_forest", description="Model type: random_forest, xgboost, neural_network")
+    version: str = Field(..., description="Version string (e.g., 2.0.0)")
+    notes: Optional[str] = Field(None, description="Training notes")
+
+
+class ModelVersionResponse(BaseModel):
+    """Schema for model version response"""
+
+    id: int
+    version: str
+    model_type: str
+    accuracy: float
+    precision: float
+    recall: float
+    f1_score: float
+    roc_auc: float
+    training_samples: int
+    is_active: bool
+    created_at: datetime
+    notes: Optional[str]
+
+
+class ModelComparisonResponse(BaseModel):
+    """Schema for model comparison response"""
+
+    models: List[ModelVersionResponse]
+    best_model: Optional[str]
+    comparison_metrics: Dict[str, Any]
+
+
+# ============== Analytics Schemas ==============
+
+class TimeSeriesDataPoint(BaseModel):
+    """Single data point in time series"""
+
+    date: str
+    fraud_count: int
+    legitimate_count: int
+    total_count: int
+    fraud_rate: float
+
+
+class TimeSeriesResponse(BaseModel):
+    """Response for time series analytics"""
+
+    data: List[TimeSeriesDataPoint]
+    period: str  # "daily", "weekly", "monthly"
+    start_date: datetime
+    end_date: datetime
+
+
+class PredictionFilter(BaseModel):
+    """Schema for filtering predictions"""
+
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    is_fraud: Optional[bool] = None
+    min_amount: Optional[float] = None
+    max_amount: Optional[float] = None
+    min_risk_score: Optional[int] = None
+    max_risk_score: Optional[int] = None
+    limit: int = Field(default=100, le=1000)
+    offset: int = Field(default=0, ge=0)
