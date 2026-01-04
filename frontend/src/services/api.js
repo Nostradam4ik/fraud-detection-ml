@@ -338,6 +338,35 @@ export const downloadModelPerformanceReport = async () => {
   return response;
 };
 
+// Excel exports
+export const downloadExcelReport = async (days = 30) => {
+  const response = await api.get(`/reports/export/excel?days=${days}`, {
+    responseType: 'blob'
+  });
+  return response;
+};
+
+export const downloadExcelFraudOnly = async (days = 30) => {
+  const response = await api.get(`/reports/export/excel/fraud-only?days=${days}`, {
+    responseType: 'blob'
+  });
+  return response;
+};
+
+export const downloadExcelHighRisk = async (days = 30, threshold = 50) => {
+  const response = await api.get(`/reports/export/excel/high-risk?days=${days}&threshold=${threshold}`, {
+    responseType: 'blob'
+  });
+  return response;
+};
+
+export const downloadCSVExport = async (days = 30) => {
+  const response = await api.get(`/reports/export/csv?days=${days}`, {
+    responseType: 'blob'
+  });
+  return response;
+};
+
 // ==================== Alerts endpoints ====================
 
 export const getAlerts = async () => {

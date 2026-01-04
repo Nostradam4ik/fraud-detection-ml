@@ -8,14 +8,20 @@ import {
   TrendingUp,
   AlertTriangle,
   Loader,
-  Check
+  Check,
+  FileSpreadsheet,
+  Table
 } from 'lucide-react';
 import {
   downloadFraudReport,
   downloadBatchReport,
   downloadTrendAnalysisReport,
   downloadHighRiskReport,
-  downloadModelPerformanceReport
+  downloadModelPerformanceReport,
+  downloadExcelReport,
+  downloadExcelFraudOnly,
+  downloadExcelHighRisk,
+  downloadCSVExport
 } from '../services/api';
 import { useI18n } from '../i18n/index.jsx';
 
@@ -267,6 +273,129 @@ export default function Reports() {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Excel Export Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+            <FileSpreadsheet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reports.excelExports') || 'Excel Exports'}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('reports.excelExportsDesc') || 'Export data to Excel or CSV format for analysis'}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* All Predictions Excel */}
+          <button
+            onClick={async () => {
+              setLoading({ ...loading, 'excel-all': true });
+              try {
+                const response = await downloadExcelReport(selectedDays);
+                const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `predictions_${selectedDays}days_${new Date().toISOString().split('T')[0]}.xlsx`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showMessage(t('reports.reportDownloaded') || 'Report downloaded');
+              } catch (error) {
+                showMessage(error.response?.data?.detail || t('reports.failedDownload'), 'error');
+              }
+              setLoading({ ...loading, 'excel-all': false });
+            }}
+            disabled={loading['excel-all']}
+            className="flex flex-col items-center gap-2 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition border border-emerald-200 dark:border-emerald-800"
+          >
+            {loading['excel-all'] ? <Loader className="w-6 h-6 text-emerald-600 animate-spin" /> : <FileSpreadsheet className="w-6 h-6 text-emerald-600" />}
+            <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">{t('reports.allPredictions') || 'All Predictions'}</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">.xlsx</span>
+          </button>
+
+          {/* Fraud Only Excel */}
+          <button
+            onClick={async () => {
+              setLoading({ ...loading, 'excel-fraud': true });
+              try {
+                const response = await downloadExcelFraudOnly(selectedDays);
+                const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fraud_only_${selectedDays}days_${new Date().toISOString().split('T')[0]}.xlsx`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showMessage(t('reports.reportDownloaded') || 'Report downloaded');
+              } catch (error) {
+                showMessage(error.response?.data?.detail || t('reports.failedDownload'), 'error');
+              }
+              setLoading({ ...loading, 'excel-fraud': false });
+            }}
+            disabled={loading['excel-fraud']}
+            className="flex flex-col items-center gap-2 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition border border-red-200 dark:border-red-800"
+          >
+            {loading['excel-fraud'] ? <Loader className="w-6 h-6 text-red-600 animate-spin" /> : <AlertTriangle className="w-6 h-6 text-red-600" />}
+            <span className="text-sm font-medium text-red-700 dark:text-red-300">{t('reports.fraudOnly') || 'Fraud Only'}</span>
+            <span className="text-xs text-red-600 dark:text-red-400">.xlsx</span>
+          </button>
+
+          {/* High Risk Excel */}
+          <button
+            onClick={async () => {
+              setLoading({ ...loading, 'excel-risk': true });
+              try {
+                const response = await downloadExcelHighRisk(selectedDays, riskThreshold);
+                const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `high_risk_${riskThreshold}plus_${new Date().toISOString().split('T')[0]}.xlsx`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showMessage(t('reports.reportDownloaded') || 'Report downloaded');
+              } catch (error) {
+                showMessage(error.response?.data?.detail || t('reports.failedDownload'), 'error');
+              }
+              setLoading({ ...loading, 'excel-risk': false });
+            }}
+            disabled={loading['excel-risk']}
+            className="flex flex-col items-center gap-2 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition border border-orange-200 dark:border-orange-800"
+          >
+            {loading['excel-risk'] ? <Loader className="w-6 h-6 text-orange-600 animate-spin" /> : <TrendingUp className="w-6 h-6 text-orange-600" />}
+            <span className="text-sm font-medium text-orange-700 dark:text-orange-300">{t('reports.highRiskExcel') || 'High Risk'}</span>
+            <span className="text-xs text-orange-600 dark:text-orange-400">.xlsx ({riskThreshold}+)</span>
+          </button>
+
+          {/* CSV Export */}
+          <button
+            onClick={async () => {
+              setLoading({ ...loading, 'csv': true });
+              try {
+                const response = await downloadCSVExport(selectedDays);
+                const blob = new Blob([response.data], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `predictions_${selectedDays}days_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showMessage(t('reports.reportDownloaded') || 'Report downloaded');
+              } catch (error) {
+                showMessage(error.response?.data?.detail || t('reports.failedDownload'), 'error');
+              }
+              setLoading({ ...loading, 'csv': false });
+            }}
+            disabled={loading['csv']}
+            className="flex flex-col items-center gap-2 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition border border-blue-200 dark:border-blue-800"
+          >
+            {loading['csv'] ? <Loader className="w-6 h-6 text-blue-600 animate-spin" /> : <Table className="w-6 h-6 text-blue-600" />}
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('reports.csvExport') || 'CSV Export'}</span>
+            <span className="text-xs text-blue-600 dark:text-blue-400">.csv</span>
+          </button>
         </div>
       </div>
 
