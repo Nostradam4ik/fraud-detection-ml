@@ -17,6 +17,11 @@ const TimeSeriesChart = lazy(() => import('./components/TimeSeriesChart'));
 const AdvancedFilters = lazy(() => import('./components/AdvancedFilters'));
 const Admin = lazy(() => import('./components/Admin'));
 const Reports = lazy(() => import('./components/Reports'));
+const FraudNetworkGraph = lazy(() => import('./components/FraudNetworkGraph'));
+const RiskForecast = lazy(() => import('./components/RiskForecast'));
+const SimulationLab = lazy(() => import('./components/SimulationLab'));
+const GeoVelocity = lazy(() => import('./components/GeoVelocity'));
+const DeviceFingerprint = lazy(() => import('./components/DeviceFingerprint'));
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -42,7 +47,12 @@ import {
   ChevronDown,
   Menu,
   Home,
-  MoreHorizontal
+  MoreHorizontal,
+  Network,
+  TrendingUp,
+  FlaskConical,
+  Globe,
+  Fingerprint
 } from 'lucide-react';
 
 function App() {
@@ -196,6 +206,11 @@ function App() {
 
   // More menu items
   const moreMenuItems = [
+    { id: 'deviceFingerprint', label: t('nav.deviceFingerprint'), icon: Fingerprint },
+    { id: 'geoVelocity', label: t('nav.geoVelocity'), icon: Globe },
+    { id: 'simulation', label: t('nav.simulationLab'), icon: FlaskConical },
+    { id: 'forecast', label: t('nav.riskForecast'), icon: TrendingUp },
+    { id: 'network', label: t('nav.fraudNetwork'), icon: Network },
     { id: 'reports', label: t('nav.reports'), icon: FileText },
     { id: 'profile', label: t('nav.profile'), icon: User },
     { id: 'model', label: t('nav.modelInfo'), icon: AlertTriangle },
@@ -371,7 +386,7 @@ function App() {
                   setShowMoreMenu(!showMoreMenu);
                 }}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  ['reports', 'profile', 'model', 'settings', 'admin'].includes(activeTab)
+                  ['deviceFingerprint', 'geoVelocity', 'simulation', 'forecast', 'network', 'reports', 'profile', 'model', 'settings', 'admin'].includes(activeTab)
                     ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
@@ -465,6 +480,16 @@ function App() {
           )}
 
           {activeTab === 'reports' && <Reports />}
+
+          {activeTab === 'network' && <FraudNetworkGraph />}
+
+          {activeTab === 'forecast' && <RiskForecast />}
+
+          {activeTab === 'simulation' && <SimulationLab />}
+
+          {activeTab === 'geoVelocity' && <GeoVelocity />}
+
+          {activeTab === 'deviceFingerprint' && <DeviceFingerprint />}
 
           {activeTab === 'admin' && isAdmin && (
             <Admin user={user} />

@@ -13,6 +13,12 @@ from .reports import router as reports_router
 from .websocket import router as websocket_router
 from .webhooks import router as webhooks_router
 from .api_keys import router as api_keys_router
+from .fraud_network import router as fraud_network_router
+from .explainer import router as explainer_router
+from .forecast import router as forecast_router
+from .simulation import router as simulation_router
+from .geo_velocity import router as geo_velocity_router
+from .device_fingerprint import router as device_fingerprint_router
 
 router = APIRouter()
 
@@ -28,3 +34,9 @@ router.include_router(reports_router)  # PDF reports routes (has own prefix)
 router.include_router(websocket_router)  # WebSocket routes
 router.include_router(webhooks_router)  # Webhook routes (has own prefix)
 router.include_router(api_keys_router)  # API keys routes (has own prefix)
+router.include_router(fraud_network_router)  # Fraud network graph (has own prefix)
+router.include_router(explainer_router)  # AI Fraud Explainer (has own prefix)
+router.include_router(forecast_router)  # Risk Forecast (has own prefix)
+router.include_router(simulation_router)  # Fraud Simulation Lab (has own prefix)
+router.include_router(geo_velocity_router)  # Geo-Velocity Tracker (has own prefix)
+router.include_router(device_fingerprint_router)  # Device Fingerprint Analyzer (has own prefix)

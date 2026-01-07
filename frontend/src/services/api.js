@@ -465,6 +465,28 @@ export const toggleWebhook = async (webhookId) => {
   return response.data;
 };
 
+// ==================== Fraud Network endpoints ====================
+
+export const getFraudNetworkGraph = async (days = 30, minRisk = 30) => {
+  const response = await api.get(`/fraud-network/graph?days=${days}&min_risk=${minRisk}`);
+  return response.data;
+};
+
+export const getFraudNetworkNode = async (nodeId) => {
+  const response = await api.get(`/fraud-network/node/${nodeId}`);
+  return response.data;
+};
+
+export const getFraudNetworkClusters = async (days = 30, minRisk = 30) => {
+  const response = await api.get(`/fraud-network/clusters?days=${days}&min_risk=${minRisk}`);
+  return response.data;
+};
+
+export const getFraudNetworkTimeline = async (days = 30) => {
+  const response = await api.get(`/fraud-network/timeline?days=${days}`);
+  return response.data;
+};
+
 // ==================== Health endpoint ====================
 
 export const checkHealth = async () => {
