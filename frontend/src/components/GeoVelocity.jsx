@@ -48,7 +48,7 @@ function GeoVelocity() {
   const fetchCities = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/geo-velocity/cities`, {
+      const response = await fetch(`${API_URL}/api/v1/geo-velocity/cities`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -66,7 +66,7 @@ function GeoVelocity() {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `${API_URL}/api/geo-velocity/analyze/${userId}?days=${days}`,
+        `${API_URL}/api/v1/geo-velocity/analyze/${userId}?days=${days}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.ok) {
@@ -87,7 +87,7 @@ function GeoVelocity() {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `${API_URL}/api/geo-velocity/map-data/${userId}?days=${days}`,
+        `${API_URL}/api/v1/geo-velocity/map-data/${userId}?days=${days}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.ok) {
@@ -106,7 +106,7 @@ function GeoVelocity() {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `${API_URL}/api/geo-velocity/simulate-fraud?user_id=${userId}`,
+        `${API_URL}/api/v1/geo-velocity/simulate-fraud?user_id=${userId}`,
         { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.ok) {
@@ -126,7 +126,7 @@ function GeoVelocity() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/geo-velocity/check`, {
+      const response = await fetch(`${API_URL}/api/v1/geo-velocity/check`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

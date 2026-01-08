@@ -52,7 +52,7 @@ function SimulationLab() {
   const fetchScenarios = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/simulation/scenarios`, {
+      const response = await fetch(`${API_URL}/api/v1/simulation/scenarios`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -69,7 +69,7 @@ function SimulationLab() {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/simulation/start`, {
+      const response = await fetch(`${API_URL}/api/v1/simulation/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ function SimulationLab() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/simulation/submit`, {
+      const response = await fetch(`${API_URL}/api/v1/simulation/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ function SimulationLab() {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `${API_URL}/api/simulation/hints/${simulation.simulation_id}/${transactionId}`,
+        `${API_URL}/api/v1/simulation/hints/${simulation.simulation_id}/${transactionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.ok) {

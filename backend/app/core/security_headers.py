@@ -31,14 +31,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         response = await call_next(request)
 
-        # Content-Security-Policy
-        # Adjust these based on your frontend needs
+        # Content-Security-Policy with Swagger CDN support
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  # Needed for some React features
-            "style-src 'self' 'unsafe-inline'",  # Needed for inline styles
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",  # Added CDN for Swagger
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",  # Added CDN for Swagger
             "img-src 'self' data: https:",
-            "font-src 'self' data:",
+            "font-src 'self' data: https://cdn.jsdelivr.net",  # Added CDN for Swagger fonts
             "connect-src 'self' ws: wss: http://localhost:* https://api.anthropic.com",
             "frame-ancestors 'self'",
             "form-action 'self'",
