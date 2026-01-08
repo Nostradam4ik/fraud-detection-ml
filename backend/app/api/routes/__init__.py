@@ -19,6 +19,7 @@ from .forecast import router as forecast_router
 from .simulation import router as simulation_router
 from .geo_velocity import router as geo_velocity_router
 from .device_fingerprint import router as device_fingerprint_router
+from .feedback import router as feedback_router
 
 router = APIRouter()
 
@@ -40,3 +41,4 @@ router.include_router(forecast_router)  # Risk Forecast (has own prefix)
 router.include_router(simulation_router)  # Fraud Simulation Lab (has own prefix)
 router.include_router(geo_velocity_router)  # Geo-Velocity Tracker (has own prefix)
 router.include_router(device_fingerprint_router)  # Device Fingerprint Analyzer (has own prefix)
+router.include_router(feedback_router)  # ML Feedback & Retraining (has own prefix)
